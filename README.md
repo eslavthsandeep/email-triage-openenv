@@ -1,5 +1,13 @@
 # 📬 Email Triage OpenEnv
 
+---
+title: Email Triage OpenEnv
+emoji: 📧
+colorFrom: blue
+colorTo: purple
+sdk: docker
+pinned: false
+---
 > A real-world OpenEnv environment where AI agents learn to manage an inbox —
 > classifying emails, drafting replies, escalating crises, and achieving inbox zero.
 
