@@ -1,0 +1,46 @@
+name: email-triage-env
+version: "1.0.0"
+description: >
+  A real-world email triage environment where an AI agent must read, classify,
+  prioritize, and respond to a simulated inbox. The agent interacts with emails
+  by reading them, marking urgency, archiving spam, drafting replies, and
+  escalating critical issues — tasks that knowledge workers perform daily.
+author: hackathon-participant
+tags:
+  - openenv
+  - email
+  - triage
+  - productivity
+  - real-world
+tasks:
+  - id: task_easy
+    name: "Basic Email Classification"
+    difficulty: easy
+    description: >
+      Classify all emails in the inbox by type (spam, urgent, normal, newsletter)
+      and mark spam emails for deletion.
+  - id: task_medium
+    name: "Priority Inbox Management"
+    difficulty: medium
+    description: >
+      Sort inbox by priority, draft a reply to the most urgent email, and
+      unsubscribe from newsletters.
+  - id: task_hard
+    name: "Full Triage Workflow"
+    difficulty: hard
+    description: >
+      Perform complete inbox zero: classify all emails, reply to urgent ones
+      with contextually appropriate responses, escalate critical emails,
+      archive resolved threads, and produce a triage summary report.
+action_space:
+  type: discrete+text
+  description: >
+    Agent chooses an action type and optionally provides text content
+    (e.g. reply body, classification label).
+observation_space:
+  type: structured
+  description: >
+    Current email list with metadata (subject, sender, timestamp, body snippet),
+    current inbox stats, last action result, and step count.
+reward_range: [0.0, 1.0]
+max_steps: 50
