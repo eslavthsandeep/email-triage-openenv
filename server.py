@@ -112,15 +112,32 @@ async def list_tasks():
     return {"tasks": tasks}
 
 
+# @app.post("/reset")
+# async def reset(request: ResetRequest):
+#     """Reset the environment for a given task and return the initial observation."""
+#     task_id = request.task_id or "task_easy"
+#     session_id = request.session_id or _DEFAULT_SESSION
+#     env = EmailTriageEnv(task_id=task_id)
+#     _envs[session_id] = env
+#     obs = env.reset()
+#     return obs.model_dump()
 @app.post("/reset")
 async def reset(request: ResetRequest):
     """Reset the environment for a given task and return the initial observation."""
     task_id = request.task_id or "task_easy"
     session_id = request.session_id or _DEFAULT_SESSION
+
     env = EmailTriageEnv(task_id=task_id)
     _envs[session_id] = env
+
     obs = env.reset()
-    return obs.model_dump()
+
+    return {
+        "observation": obs.model_dump(),  # wrap it
+        "reward": 0,
+        "done": False,
+        "info": {}
+    }
 
 
 @app.post("/step", response_model=StepResponse)
