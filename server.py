@@ -123,20 +123,45 @@ async def reset(request: ResetRequest):
     return obs.model_dump()
 
 
+# @app.post("/step", response_model=StepResponse)
+# async def step(request: StepRequest):
+#     """Execute one action and return the new observation, reward, done flag, and info."""
+#     session_id = request.session_id or _DEFAULT_SESSION
+#     env = _get_env(session_id)
+#     try:
+#         obs, reward, done, info = env.step(request.action)
+#     except Exception as e:
+#         raise HTTPException(status_code=400, detail=str(e))
+#     return StepResponse(
+#         observation=obs.model_dump(),
+#         reward=reward,
+#         done=done,
+#         info=info,
+#     )
+
 @app.post("/step", response_model=StepResponse)
 async def step(request: StepRequest):
     """Execute one action and return the new observation, reward, done flag, and info."""
-    session_id = request.session_id or _DEFAULT_SESSION
+
+    session_id = request.session_id if request.session_id else _DEFAULT_SESSION
     env = _get_env(session_id)
+
+    if env is None:
+        raise HTTPException(status_code=400, detail="Session not found")
+
     try:
         obs, reward, done, info = env.step(request.action)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+    # 🔥 CRITICAL FIX HERE
+    reward_value = reward.total if hasattr(reward, "total") else reward
+
     return StepResponse(
         observation=obs.model_dump(),
-        reward=reward,
-        done=done,
-        info=info,
+        reward=float(reward_value),   # ✅ ONLY FLOAT
+        done=bool(done),
+        info=info if isinstance(info, dict) else {}
     )
 
 
