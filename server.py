@@ -141,8 +141,6 @@ async def reset(request: ResetRequest):
 
 @app.post("/step", response_model=StepResponse)
 async def step(request: StepRequest):
-    """Execute one action and return the new observation, reward, done flag, and info."""
-
     session_id = request.session_id if request.session_id else _DEFAULT_SESSION
     env = _get_env(session_id)
 
@@ -154,16 +152,14 @@ async def step(request: StepRequest):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    # 🔥 CRITICAL FIX HERE
     reward_value = reward.total if hasattr(reward, "total") else reward
 
-    return StepResponse(
-        observation=obs.model_dump(),
-        reward=float(reward_value),   # ✅ ONLY FLOAT
-        done=bool(done),
-        info=info if isinstance(info, dict) else {}
-    )
-
+    return {
+        "observation": obs.model_dump(),
+        "reward": float(reward_value),
+        "done": bool(done),
+        "info": info if isinstance(info, dict) else {}
+    }
 
 @app.get("/state")
 async def state(session_id: str = _DEFAULT_SESSION):
