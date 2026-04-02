@@ -1,10 +1,57 @@
+# name: email-triage-env
+# version: "1.0.0"
+# description: >
+#   A real-world email triage environment where an AI agent must read, classify,
+#   prioritize, and respond to a simulated inbox. The agent interacts with emails
+#   by reading them, marking urgency, archiving spam, drafting replies, and
+#   escalating critical issues — tasks that knowledge workers perform daily.
+# author: hackathon-participant
+# tags:
+#   - openenv
+#   - email
+#   - triage
+#   - productivity
+#   - real-world
+# tasks:
+#   - id: task_easy
+#     name: "Basic Email Classification"
+#     difficulty: easy
+#     description: >
+#       Classify all emails in the inbox by type (spam, urgent, normal, newsletter)
+#       and mark spam emails for deletion.
+#   - id: task_medium
+#     name: "Priority Inbox Management"
+#     difficulty: medium
+#     description: >
+#       Sort inbox by priority, draft a reply to the most urgent email, and
+#       unsubscribe from newsletters.
+#   - id: task_hard
+#     name: "Full Triage Workflow"
+#     difficulty: hard
+#     description: >
+#       Perform complete inbox zero: classify all emails, reply to urgent ones
+#       with contextually appropriate responses, escalate critical emails,
+#       archive resolved threads, and produce a triage summary report.
+# action_space:
+#   type: discrete+text
+#   description: >
+#     Agent chooses an action type and optionally provides text content
+#     (e.g. reply body, classification label).
+# observation_space:
+#   type: structured
+#   description: >
+#     Current email list with metadata (subject, sender, timestamp, body snippet),
+#     current inbox stats, last action result, and step count.
+# reward_range: [0.0, 1.0]
+# max_steps: 50
+
+
 name: email-triage-env
 version: "1.0.0"
 description: >
-  A real-world email triage environment where an AI agent must read, classify,
-  prioritize, and respond to a simulated inbox. The agent interacts with emails
-  by reading them, marking urgency, archiving spam, drafting replies, and
-  escalating critical issues — tasks that knowledge workers perform daily.
+  A real-world email triage environment where an AI agent manages a simulated
+  inbox of 10 emails. The agent must read, classify, reply, escalate, archive,
+  and unsubscribe — tasks that mirror genuine knowledge-worker workflows.
 author: hackathon-participant
 tags:
   - openenv
@@ -12,35 +59,115 @@ tags:
   - triage
   - productivity
   - real-world
+
+# OpenEnv API endpoints (relative to server root)
+endpoints:
+  reset: /reset
+  step: /step
+  state: /state
+  health: /health
+
+# Task definitions
 tasks:
   - id: task_easy
     name: "Basic Email Classification"
     difficulty: easy
     description: >
-      Classify all emails in the inbox by type (spam, urgent, normal, newsletter)
-      and mark spam emails for deletion.
+      Classify all 10 emails by type (spam, urgent, normal, newsletter)
+      and delete spam emails. Score 0.0–1.0.
+    max_steps: 50
+    score_range: [0.0, 1.0]
+
   - id: task_medium
     name: "Priority Inbox Management"
     difficulty: medium
     description: >
-      Sort inbox by priority, draft a reply to the most urgent email, and
-      unsubscribe from newsletters.
+      Classify the inbox, reply to all urgent emails with appropriate
+      responses, and unsubscribe from newsletter senders.
+    max_steps: 50
+    score_range: [0.0, 1.0]
+
   - id: task_hard
     name: "Full Triage Workflow"
     difficulty: hard
     description: >
-      Perform complete inbox zero: classify all emails, reply to urgent ones
-      with contextually appropriate responses, escalate critical emails,
-      archive resolved threads, and produce a triage summary report.
+      Full inbox zero workflow — classify all emails, reply with quality
+      responses, escalate critical issues, archive resolved threads,
+      and submit a triage summary report.
+    max_steps: 50
+    score_range: [0.0, 1.0]
+
+# Action space definition
 action_space:
   type: discrete+text
-  description: >
-    Agent chooses an action type and optionally provides text content
-    (e.g. reply body, classification label).
+  actions:
+    - name: read
+      description: Read the full body of an email
+      params: [email_id]
+    - name: classify
+      description: Classify email as spam/urgent/normal/newsletter
+      params: [email_id, content]
+    - name: reply
+      description: Draft and send a reply to an email
+      params: [email_id, content]
+    - name: delete
+      description: Delete a spam email
+      params: [email_id]
+    - name: archive
+      description: Archive a resolved email thread
+      params: [email_id]
+    - name: escalate
+      description: Escalate a critical email to human review
+      params: [email_id]
+    - name: unsubscribe
+      description: Unsubscribe from a newsletter sender
+      params: [email_id]
+    - name: summarize
+      description: Submit a triage summary report
+      params: [content]
+    - name: noop
+      description: Take no action (costs a step)
+      params: []
+
+# Observation space definition
 observation_space:
   type: structured
+  fields:
+    - name: emails
+      type: list[EmailMeta]
+      description: Current inbox listing with headers (id, subject, sender, label, read, replied)
+    - name: open_email_body
+      type: string|null
+      description: Full body text of the currently opened email (after a read action)
+    - name: inbox_stats
+      type: InboxStats
+      description: Aggregate inbox counts (total, unread, urgent, spam, archived, escalated)
+    - name: last_action_result
+      type: string
+      description: Human-readable result of the previous action
+    - name: step
+      type: integer
+      description: Current step number (0-indexed)
+    - name: done
+      type: boolean
+      description: Whether the episode has ended
+    - name: task_id
+      type: string
+      description: The current task identifier
+
+# Reward function summary
+reward:
+  range: [0.0, 1.0]
+  type: dense
   description: >
-    Current email list with metadata (subject, sender, timestamp, body snippet),
-    current inbox stats, last action result, and step count.
-reward_range: [0.0, 1.0]
-max_steps: 50
+    Reward provided at every step (not just terminal). Correct classification
+    gives +0.08, high-quality replies give +0.15, correct escalations give
+    +0.12, deleting spam gives +0.08. Wrong actions are penalized
+    (delete non-spam = -0.05, wrong classification = -0.03, noop = -0.01).
+
+# Infrastructure
+runtime:
+  max_steps: 50
+  port: 7860
+  framework: fastapi
+  python: "3.11"
