@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "email-triage-openenv"
+version = "1.0.0"
+description = "A real-world email triage OpenEnv environment for AI agent training and evaluation."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+  { name = "hackathon-participant" }
+]
+keywords = ["openenv", "email", "triage", "rl", "agent", "environment"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.30.6",
+  "pydantic>=2.7.4",
+  "openai>=1.40.0",
+  "requests>=2.32.3",
+  "httpx>=0.27.0",
+  "python-multipart>=0.0.9",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "pytest-asyncio>=0.23.0",
+  "httpx>=0.27.0",
+]
+
+[project.scripts]
+email-triage-env = "server:app"
+
+[project.urls]
+Homepage = "https://huggingface.co/spaces"
+Repository = "https://huggingface.co/spaces"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["env*", "tasks*"]
+
+[tool.setuptools.package-data]
+"*" = ["openenv.yaml", "*.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.openenv]
+name = "email-triage-env"
+version = "1.0.0"
+entrypoint = "server:app"
+port = 7860
+tasks = ["task_easy", "task_medium", "task_hard"]
+reset_endpoint = "/reset"
+step_endpoint = "/step"
+state_endpoint = "/state"
+health_endpoint = "/health"
