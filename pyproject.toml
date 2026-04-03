@@ -38,7 +38,7 @@ dev = [
 
 # 👇 ADD THIS ENTIRE BLOCK after optional-dependencies
 [project.scripts]
-server = "server.app:run_server"
+server = "server.app:main" 
 
 [project.urls]
 Homepage = "https://huggingface.co/spaces"

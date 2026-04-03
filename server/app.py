@@ -144,12 +144,13 @@ async def grade(task_id: str, request: Request):
     return JSONResponse(content={"task_id": task_id, "score": score, "breakdown": breakdown})
 
 
-def run_server():
-    """Entry point for [project.scripts] server."""
+def main():
+    """Main entry point — required by openenv validate."""
     import uvicorn
     port = int(os.environ.get("PORT", 7860))
     uvicorn.run("server.app:app", host="0.0.0.0", port=port, reload=False)
 
 
+# Required by openenv validate
 if __name__ == "__main__":
-    run_server()
+    main()
