@@ -18,7 +18,6 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
-  "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
   "fastapi>=0.115.0",
@@ -28,17 +27,18 @@ dependencies = [
   "requests>=2.32.3",
   "httpx>=0.27.0",
   "python-multipart>=0.0.9",
+  "openenv-core>=0.2.0",       # 👈 ADD THIS LINE inside dependencies
 ]
 
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0.0",
   "pytest-asyncio>=0.23.0",
-  "httpx>=0.27.0",
 ]
 
+# 👇 ADD THIS ENTIRE BLOCK after optional-dependencies
 [project.scripts]
-email-triage-env = "server:app"
+server = "server.app:run_server"
 
 [project.urls]
 Homepage = "https://huggingface.co/spaces"
@@ -46,7 +46,7 @@ Repository = "https://huggingface.co/spaces"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["env*", "tasks*"]
+include = ["env*", "tasks*", "server*"]
 
 [tool.setuptools.package-data]
 "*" = ["openenv.yaml", "*.md"]
@@ -60,7 +60,7 @@ python_functions = ["test_*"]
 [tool.openenv]
 name = "email-triage-env"
 version = "1.0.0"
-entrypoint = "server:app"
+entrypoint = "server.app:app"
 port = 7860
 tasks = ["task_easy", "task_medium", "task_hard"]
 reset_endpoint = "/reset"
